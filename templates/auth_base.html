@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Neuroed - Auth{% endblock %}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Dark Grid Mesh Background */
+    body {
+      background-color: #06050a;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0);
+      background-size: 24px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Purple & Warm Backlight Glow Behind Card */
+    .glow-wrapper {
+      position: relative;
+    }
+
+    .glow-wrapper::before {
+      content: "";
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      right: -15px;
+      bottom: -15px;
+      border-radius: 36px;
+      background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #f97316 100%);
+      filter: blur(28px);
+      opacity: 0.65;
+      z-index: 1;
+    }
+
+    /* Glassmorphic Card Container */
+    .card {
+      position: relative;
+      z-index: 2;
+      background: rgba(18, 16, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 30px;
+      padding: 44px 36px;
+      width: 400px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(25px);
+    }
+
+    /* Icon Badge Header */
+    .icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(99, 102, 241, 0.3));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      color: #e9d5ff;
+      font-size: 20px;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    /* Inputs Styling */
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(8, 7, 13, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-field::placeholder {
+      color: #64748b;
+    }
+
+    .input-field:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Options Row (Forgot Password) */
+    .options-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .forgot-link {
+      color: #c084fc;
+      font-size: 12px;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      color: #e9d5ff;
+      text-decoration: underline;
+    }
+
+    /* Vibrant Purple Submit Button */
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #9333ea 100%);
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Switch Sign In / Sign Up Footer */
+    .footer-text {
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 24px;
+    }
+
+    .footer-text a {
+      color: #c084fc;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Helper class to toggle views dynamically if needed */
+    .hidden {
+      display: none;
+    }
+
+    /* --- additions: scrolling on short screens, phone width, messages --- */
+    body { overflow-y: auto; padding: 24px 0; }
+    .card { width: min(400px, 92vw); }
+
+    .flash {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+    .flash.success { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #86efac; }
+    .flash.danger  { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
+    .flash.info    { background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); color: #e9d5ff; }
+
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .hint { color: #64748b; font-size: 12px; line-height: 1.5; margin: -6px 0 18px; }
+  </style>
+</head>
+<body>
+
+  <div class="glow-wrapper">
+    <div class="card">
+      <div class="icon-badge">★</div>
+{% block content %}{% endblock %}
+    </div>
+  </div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

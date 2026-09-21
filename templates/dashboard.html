@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuroed - Vault Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0b0b12;
+            --card-bg: rgba(23, 22, 34, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --subtext-color: #a0a0b0;
+            --glow-color: rgba(168, 85, 247, 0.4);
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --toggle-bg: #13111c;
+            --search-bg: rgba(10, 10, 18, 0.6);
+            --card-inner: rgba(15, 14, 25, 0.6);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --text-color: #0f172a;
+            --subtext-color: #475569;
+            --glow-color: rgba(168, 85, 247, 0.25);
+            --toggle-bg: #cbd5e1;
+            --search-bg: rgba(255, 255, 255, 0.85);
+            --card-inner: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, background 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .app-window {
+            width: 100%;
+            max-width: 100%;
+            height: calc(100vh - 24px);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.35), 0 0 40px rgba(168, 85, 247, 0.15);
+            display: grid;
+            grid-template-rows: 80px 1fr;
+            grid-template-columns: 80px 1fr;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 50%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 50px 12px 20px;
+            border-radius: 16px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle {
+            width: 64px;
+            height: 32px;
+            background: var(--toggle-bg);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-thumb {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+        }
+
+        [data-theme="light"] .toggle-thumb {
+            transform: translateX(32px);
+            background: linear-gradient(135deg, #f97316, #eab308);
+        }
+
+        aside {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 25px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--subtext-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        main {
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .vault-grid {
+            column-count: 4;
+            column-gap: 20px;
+        }
+
+        .vault-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .vault-item img {
+            width: 100%;
+            display: block;
+            border-radius: 18px;
+        }
+
+        .vault-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: flex-end;
+            padding: 15px;
+            color: #fff;
+        }
+
+        .vault-item:hover .vault-item-overlay { opacity: 1; }
+
+        .upload-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            min-height: 450px;
+        }
+
+        .drop-zone {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border: 2px dashed var(--accent-purple);
+            border-radius: 24px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--card-inner);
+            transition: transform 0.2s;
+        }
+
+        .drop-zone:hover { transform: scale(1.02); }
+
+        /* Dynamic Glass Theme-Aware Upload Card */
+        .upload-card {
+            width: 400px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 25px var(--glow-color);
+            position: relative;
+            display: none;
+            color: var(--text-color);
+        }
+
+        .upload-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 15px;
+        }
+
+        .file-icon-box {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1e1b4b, #311b92);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #6366f1;
+        }
+
+        .file-details h4 { font-size: 1rem; color: var(--text-color); }
+        .file-details span { font-size: 0.85rem; color: var(--subtext-color); }
+
+        .close-card-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--subtext-color);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .progress-box {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .progress-status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-purple);
+            box-shadow: 0 0 10px var(--accent-purple);
+            transition: width 0.2s ease;
+        }
+
+        .settings-container {
+            max-width: 650px;
+            margin: 20px auto;
+            background: var(--card-inner);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-group { margin-bottom: 22px; }
+
+        .settings-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .settings-label-row label {
+            font-size: 0.9rem;
+            color: var(--subtext-color);
+        }
+
+        .edit-badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-badge:hover {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .settings-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        /* Danger / Action Section for Account */
+        .account-actions {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .signout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signout-btn:hover { background: rgba(255, 255, 255, 0.08); }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--accent-red);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-btn:hover {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            width: 360px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+            text-align: center;
+        }
+
+        .modal-card h3 { margin-bottom: 10px; font-size: 1.2rem; }
+        .modal-card p { font-size: 0.85rem; color: var(--subtext-color); margin-bottom: 20px; }
+
+        .modal-card input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions button { flex: 1; }
+
+        .cancel-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* ---- additions: real feed cards, states, toasts ---- */
+        [hidden] { display: none !important; }   /* so display:flex rules can't override the hidden attribute */
+        .search-container { display: block; }
+        button:focus-visible, input:focus-visible, textarea:focus-visible, .drop-zone:focus-visible {
+            outline: 2px solid var(--accent-purple);
+            outline-offset: 2px;
+        }
+
+        .vault-item-overlay { flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 4px; }
+        .card-niche { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.85; }
+        .card-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+        .card-desc {
+            font-size: 0.78rem;
+            opacity: 0.8;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .card-action {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-action:hover { background: rgba(255, 255, 255, 0.28); }
+        .card-action.on { background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); border-color: transparent; }
+        .card-action.on.dislike { background: var(--accent-red); }
+        @media (hover: none) { .vault-item-overlay { opacity: 1; } }
+        @media (max-width: 1100px) { .vault-grid { column-count: 3; } }
+        @media (max-width: 760px) {
+            .vault-grid { column-count: 2; }
+            .search-container { width: 60%; }
+            .logo span { display: none; }
+            .card-desc { display: none; }
+        }
+        @media (max-width: 520px) {
+            .vault-grid { column-count: 1; }     /* two columns leave ~110px cards: titles and buttons don't fit */
+            main { padding: 14px; }
+            header { padding: 0 14px; }
+            .upload-card { width: 100%; }
+            .settings-container { padding: 20px; }
+        }
+
+        .empty-state { text-align: center; color: var(--subtext-color); padding: 70px 20px; }
+        .empty-state i { font-size: 2.4rem; color: var(--accent-purple); margin-bottom: 14px; display: block; }
+        .feed-footer { text-align: center; padding: 10px 0 30px; }
+        .search-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            color: var(--subtext-color);
+            font-size: 0.9rem;
+        }
+        .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .drop-zone.dragging { transform: scale(1.03); background: rgba(168, 85, 247, 0.12); }
+        .upload-error { color: var(--accent-red); font-size: 0.85rem; margin: 6px 0 4px; display: none; }
+        .field-note { font-size: 0.78rem; color: var(--subtext-color); margin-top: 6px; }
+        .field-note.ok { color: #22c55e; }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: var(--text-color);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 14px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 0 25px var(--glow-color);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 200;
+            max-width: 90vw;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: rgba(239, 68, 68, 0.7); }
+        .modal-msg { font-size: 0.8rem; color: var(--accent-red); min-height: 1.1em; margin: -6px 0 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-window">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-brain" style="color: var(--accent-purple);"></i>
+                <span>Neuroed</span>
+            </div>
+
+            <form class="search-container" onsubmit="runSearch(event)">
+                <input type="search" id="search-input" class="search-input" placeholder="Search images, topics, niches..." autocomplete="off" aria-label="Search">
+                <button type="submit" class="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+
+            <div class="theme-toggle" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Toggle light and dark theme">
+                <div class="toggle-thumb" id="themeIcon"><i class="fa-solid fa-moon"></i></div>
+            </div>
+        </header>
+
+        <aside>
+            <button class="nav-btn active" id="btn-home" onclick="switchTab('home')" title="Home" aria-label="Home"><i class="fa-solid fa-house"></i></button>
+            <button class="nav-btn" id="btn-saved" onclick="switchTab('saved')" title="Saved" aria-label="Saved"><i class="fa-regular fa-bookmark"></i></button>
+            <button class="nav-btn" id="btn-upload" onclick="switchTab('upload')" title="Upload" aria-label="Upload"><i class="fa-solid fa-plus"></i></button>
+            <button class="nav-btn" id="btn-settings" onclick="switchTab('settings')" title="Settings" aria-label="Settings"><i class="fa-solid fa-gear"></i></button>
+        </aside>
+
+        <main>
+            <!-- Home Feed Tab -->
+            <div id="tab-home" class="tab-content active">
+                <div class="search-banner" id="search-banner" hidden>
+                    <span id="search-banner-text"></span>
+                    <button class="cancel-btn" onclick="clearSearch()">Clear search</button>
+                </div>
+                <div class="vault-grid" id="home-grid"></div>
+                <div class="empty-state" id="home-empty" hidden>
+                    <i class="fa-regular fa-face-smile"></i>
+                    <span id="home-empty-text">Nothing to show yet.</span>
+                </div>
+                <div class="feed-footer"><button class="primary-btn" id="load-more" onclick="loadFeed(false)">Show more</button></div>
+            </div>
+
+            <!-- Saved Tab -->
+            <div id="tab-saved" class="tab-content">
+                <div class="vault-grid" id="saved-grid"></div>
+                <div class="empty-state" id="saved-empty" hidden>
+                    <i class="fa-regular fa-bookmark"></i>
+                    Nothing saved yet. Tap the bookmark on a post, or upload your own.
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="tab-upload" class="tab-content">
+                <div class="upload-container">
+                    <input type="file" id="file-input" style="display: none;" accept="image/jpeg,image/png,image/webp" onchange="handleFileSelect(event)">
+
+                    <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose an image to upload">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--accent-purple); margin-bottom: 15px;"></i>
+                        <h3>Select or Drag Image Here</h3>
+                        <p style="color: var(--subtext-color); font-size: 0.9rem; margin-top: 5px;">JPG, PNG or WEBP, up to {{ max_upload_mb }} MB</p>
+                    </div>
+
+                    <div class="upload-card" id="upload-card">
+                        <button class="close-card-btn" onclick="resetUpload()" aria-label="Cancel upload"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="upload-card-header">
+                            <div class="file-icon-box"><i class="fa-solid fa-image"></i></div>
+                            <div class="file-details">
+                                <h4 id="card-filename">Image Asset</h4>
+                                <span id="card-filesize">0 MB</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="upload-title" placeholder="Title / Heading..." class="settings-input" maxlength="150" style="margin-bottom: 10px;">
+                            <textarea id="upload-desc" placeholder="Write a description or notes..." rows="3" maxlength="2000" class="settings-input" style="resize: none;"></textarea>
+                            <p class="field-note">We'll detect the niche automatically when you save.</p>
+                        </div>
+
+                        <div class="upload-error" id="upload-error" role="alert"></div>
+
+                        <div class="progress-box" id="progress-box" style="display: none;">
+                            <div class="progress-status">
+                                <span><i class="fa-solid fa-circle-notch fa-spin"></i> <span id="progress-label">Uploading...</span></span>
+                                <span id="progress-text">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <button id="start-upload-btn" onclick="processUpload()" class="primary-btn" style="width: 100%; margin-top: 10px;">Save Asset &amp; Note</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <div class="settings-container">
+                    <h2 style="margin-bottom: 25px;">Account Settings</h2>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label for="field-username">Username</label>
+                            <span class="edit-badge" onclick="requestVerification('field-username')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="text" id="field-username" class="settings-input" maxlength="30" value="{{ account.username }}" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label for="field-display">Display Name</label>
+                            <span class="edit-badge" onclick="requestVerification('field-display')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="text" id="field-display" class="settings-input" maxlength="100" value="{{ account.display_name }}" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label for="field-password">Password</label>
+                            <span class="edit-badge" onclick="requestVerification('field-password')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="password" id="field-password" class="settings-input" value="••••••••" autocomplete="new-password" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label for="field-email">Recovery Email</label>
+                            <span class="edit-badge" onclick="requestVerification('field-email')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="email" id="field-email" class="settings-input" maxlength="255" placeholder="No recovery email set" value="{{ account.email }}" disabled>
+                        <div class="field-note" id="email-note"></div>
+                    </div>
+
+                    <button class="primary-btn" onclick="saveSettings()">Save Changes</button>
+
+                    <!-- Sign Out & Delete Account Actions -->
+                    <div class="account-actions">
+                        <button class="signout-btn" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+                        <button class="delete-btn" onclick="deleteAccount()"><i class="fa-solid fa-trash-can"></i> Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Security Verification Modal -->
+        <div class="modal-overlay" id="verify-modal">
+            <div class="modal-card">
+                <i class="fa-solid fa-shield-halved" style="font-size: 2.5rem; color: var(--accent-purple); margin-bottom: 15px;"></i>
+                <h3 id="verify-title">Security Check</h3>
+                <p id="verify-text">Please enter your current password to confirm.</p>
+                <input type="password" id="verify-password-input" placeholder="Current Password" autocomplete="current-password">
+                <div class="modal-msg" id="verify-msg" role="alert"></div>
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button class="primary-btn" id="verify-btn" onclick="confirmVerification()">Verify</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email code modal -->
+        <div class="modal-overlay" id="otp-modal">
+            <div class="modal-card">
+                <i class="fa-solid fa-envelope-circle-check" style="font-size: 2.5rem; color: var(--accent-purple); margin-bottom: 15px;"></i>
+                <h3>Check your email</h3>
+                <p id="otp-text">Enter the code we sent to confirm your recovery email.</p>
+                <input type="text" id="otp-input" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code">
+                <div class="modal-msg" id="otp-msg" role="alert"></div>
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeOtpModal()">Later</button>
+                    <button class="primary-btn" onclick="confirmEmailCode()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        let ACCOUNT = {{ account|tojson }};
+        const MAX_UPLOAD_MB = {{ max_upload_mb }};
+
+        let targetFieldId = null;
+        let pendingAction = null;
+        let selectedFile = null;
+        let verifiedPassword = null;   // held in memory only, and re-checked by the server on every change
+        let searchQuery = '';
+        let feedLoading = false;
+        const itemsById = {};
+
+        /* ---------- small helpers ---------- */
+        function el(tag, className, text) {
+            const node = document.createElement(tag);
+            if (className) node.className = className;
+            if (text !== undefined) node.textContent = text;
+            return node;
+        }
+
+        function toast(message, kind) {
+            const box = document.getElementById('toast');
+            box.textContent = message;
+            box.className = 'toast show' + (kind === 'error' ? ' error' : '');
+            clearTimeout(toast.timer);
+            toast.timer = setTimeout(() => { box.className = 'toast'; }, 3500);
+        }
+
+        async function api(url, options) {
+            const res = await fetch(url, Object.assign({ credentials: 'same-origin' }, options));
+            let data = {};
+            try { data = await res.json(); } catch (e) { /* non-JSON error page */ }
+            if (res.status === 401) { window.location.href = '/'; throw new Error('signed out'); }
+            return { ok: res.ok && data.ok !== false, status: res.status, data: data };
+        }
+
+        function postJSON(url, payload) {
+            return api(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload || {}),
+            });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const icon = document.getElementById('themeIcon');
+            if (currentTheme === 'light') {
+                body.removeAttribute('data-theme');
+                icon.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            document.getElementById('btn-' + tabName).classList.add('active');
+            if (tabName === 'saved') loadSaved();
+        }
+
+        /* ---------- feed cards ---------- */
+        function actionButton(kind, icon, label, item) {
+            const button = el('button', 'card-action ' + kind);
+            button.type = 'button';
+            button.title = label;
+            button.setAttribute('aria-label', label);
+            button.appendChild(el('i', icon));
+            button.addEventListener('click', () => interact(item.id, kind));
+            return button;
+        }
+
+        function buildCard(item) {
+            itemsById[item.id] = item;
+            const card = el('div', 'vault-item');
+            card.dataset.id = item.id;
+
+            const img = el('img');
+            img.src = item.image_url;
+            img.alt = item.title;
+            img.loading = 'lazy';
+
+            const overlay = el('div', 'vault-item-overlay');
+            overlay.appendChild(el('span', 'card-niche', item.pending ? 'Pending review' : item.niche));
+            overlay.appendChild(el('strong', 'card-title', item.title));
+            if (item.description) overlay.appendChild(el('span', 'card-desc', item.description));
+
+            const actions = el('div', 'card-actions');
+            if (!item.pending) {   // a post still waiting for a niche can be saved/unsaved but not rated
+                actions.appendChild(actionButton('like', 'fa-solid fa-thumbs-up', 'Like', item));
+                actions.appendChild(actionButton('dislike', 'fa-solid fa-thumbs-down', 'Dislike', item));
+            }
+            actions.appendChild(actionButton('save', 'fa-solid fa-bookmark', 'Save', item));
+            overlay.appendChild(actions);
+
+            card.appendChild(img);
+            card.appendChild(overlay);
+            paintCard(card, item);
+            return card;
+        }
+
+        function paintCard(card, item) {
+            const like = card.querySelector('.card-action.like');
+            const dislike = card.querySelector('.card-action.dislike');
+            if (like) like.classList.toggle('on', !!item.liked);
+            if (dislike) dislike.classList.toggle('on', !!item.disliked);
+            card.querySelector('.card-action.save').classList.toggle('on', !!item.saved);
+        }
+
+        function paintEverywhere(item) {
+            document.querySelectorAll('.vault-item[data-id="' + item.id + '"]').forEach(card => paintCard(card, item));
+        }
+
+        async function interact(blogId, action) {
+            const res = await postJSON('/api/interact', { blog_id: blogId, action: action });
+            if (!res.ok) { toast(res.data.message || 'Could not update that post.', 'error'); return; }
+            const item = itemsById[blogId];
+            Object.assign(item, { liked: res.data.liked, disliked: res.data.disliked, saved: res.data.saved });
+            paintEverywhere(item);
+
+            if (action === 'save') {
+                const savedGrid = document.getElementById('saved-grid');
+                const existing = savedGrid.querySelector('.vault-item[data-id="' + blogId + '"]');
+                if (item.saved && !existing) savedGrid.prepend(buildCard(item));
+                if (!item.saved && existing) existing.remove();
+                document.getElementById('saved-empty').hidden = savedGrid.children.length > 0;
+                toast(item.saved ? 'Saved' : 'Removed from saved');
+            }
+        }
+
+        async function loadFeed(reset) {
+            if (feedLoading) return;
+            feedLoading = true;
+            const grid = document.getElementById('home-grid');
+            const loadMore = document.getElementById('load-more');
+            loadMore.disabled = true;
+            try {
+                const url = '/api/feed?limit=12' + (searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '');
+                const res = await api(url);
+                if (!res.ok) { toast(res.data.message || 'Could not load your feed.', 'error'); return; }
+                if (reset) grid.replaceChildren();
+                res.data.items.forEach(item => grid.appendChild(buildCard(item)));
+
+                const empty = document.getElementById('home-empty');
+                empty.hidden = grid.children.length > 0;
+                document.getElementById('home-empty-text').textContent = searchQuery
+                    ? 'No posts match "' + searchQuery + '".'
+                    : 'Nothing to show yet. Upload an image to get started.';
+                // A search returns all its matches at once, so only the live feed pages.
+                loadMore.style.display = searchQuery || res.data.items.length === 0 ? 'none' : 'inline-block';
+            } finally {
+                feedLoading = false;
+                loadMore.disabled = false;
+            }
+        }
+
+        async function loadSaved() {
+            const res = await api('/api/saved');
+            if (!res.ok) return;
+            const grid = document.getElementById('saved-grid');
+            grid.replaceChildren();
+            res.data.items.forEach(item => grid.appendChild(buildCard(item)));
+            document.getElementById('saved-empty').hidden = res.data.items.length > 0;
+        }
+
+        function runSearch(event) {
+            event.preventDefault();
+            const value = document.getElementById('search-input').value.trim();
+            if (!value) { clearSearch(); return; }
+            searchQuery = value;
+            const banner = document.getElementById('search-banner');
+            document.getElementById('search-banner-text').textContent = 'Results for "' + value + '"';
+            banner.hidden = false;
+            switchTab('home');
+            loadFeed(true);
+        }
+
+        function clearSearch() {
+            searchQuery = '';
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-banner').hidden = true;
+            loadFeed(true);
+        }
+
+        /* ---------- upload ---------- */
+        function handleFileSelect(event) {
+            setSelectedFile(event.target.files[0]);
+        }
+
+        function setSelectedFile(file) {
+            if (!file) return;
+            if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                toast('Only JPG, PNG and WEBP images are supported.', 'error');
+                return;
+            }
+            if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+                toast('That image is larger than ' + MAX_UPLOAD_MB + ' MB.', 'error');
+                return;
+            }
+            selectedFile = file;
+            document.getElementById('drop-zone').style.display = 'none';
+            document.getElementById('upload-card').style.display = 'block';
+            document.getElementById('card-filename').innerText = file.name;
+            document.getElementById('card-filesize').innerText = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            document.getElementById('upload-title').value = file.name.replace(/\.[^.]+$/, '');
+            document.getElementById('upload-desc').value = '';
+            showUploadError('');
+        }
+
+        function showUploadError(message) {
+            const box = document.getElementById('upload-error');
+            box.textContent = message;
+            box.style.display = message ? 'block' : 'none';
+        }
+
+        function setProgress(percent, label) {
+            document.getElementById('progress-fill').style.width = percent + '%';
+            document.getElementById('progress-text').innerText = Math.round(percent) + '%';
+            if (label) document.getElementById('progress-label').innerText = label;
+        }
+
+        function processUpload() {
+            if (!selectedFile) return;
+            showUploadError('');
+
+            const form = new FormData();
+            form.append('file', selectedFile);
+            form.append('title', document.getElementById('upload-title').value.trim());
+            form.append('description', document.getElementById('upload-desc').value);
+
+            const startButton = document.getElementById('start-upload-btn');
+            startButton.style.display = 'none';
+            document.getElementById('progress-box').style.display = 'block';
+            setProgress(0, 'Uploading...');
+
+            const request = new XMLHttpRequest();
+            request.open('POST', '/api/upload');
+            request.upload.onprogress = (e) => {
+                if (!e.lengthComputable) return;
+                // Leave the last stretch for the server, which still has to classify the image.
+                setProgress(Math.min(90, (e.loaded / e.total) * 90), e.loaded === e.total ? 'Detecting niche...' : 'Uploading...');
+            };
+            request.onerror = () => failUpload('Network error. Please try again.');
+            request.onload = () => {
+                let data = {};
+                try { data = JSON.parse(request.responseText); } catch (e) { /* not JSON */ }
+                if (request.status === 401) { window.location.href = '/'; return; }
+                if (request.status !== 200 || !data.ok) {
+                    failUpload(data.message || 'Upload failed (' + request.status + ').');
+                    return;
+                }
+                setProgress(100, 'Done');
+                const percent = typeof data.confidence === 'number' ? data.confidence.toFixed(0) + '%' : '';
+                if (data.pending) {
+                    toast('Saved, but not sure which niche it fits (best guess ' + data.best_guess + ' ' + percent +
+                          '). It will be reviewed for a new niche.');
+                } else {
+                    toast('Saved to ' + data.niche + (percent ? ' (' + percent + ' match)' : ''));
+                }
+                itemsById[data.item.id] = data.item;
+                setTimeout(() => {
+                    resetUpload();
+                    switchTab('saved');
+                }, 500);
+            };
+            request.send(form);
+        }
+
+        function failUpload(message) {
+            document.getElementById('progress-box').style.display = 'none';
+            document.getElementById('start-upload-btn').style.display = 'block';
+            setProgress(0);
+            showUploadError(message);
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.value = '';
+
+            document.getElementById('upload-card').style.display = 'none';
+            document.getElementById('drop-zone').style.display = 'block';
+            document.getElementById('progress-box').style.display = 'none';
+            document.getElementById('start-upload-btn').style.display = 'block';
+            setProgress(0, 'Uploading...');
+            document.getElementById('upload-title').value = '';
+            document.getElementById('upload-desc').value = '';
+            showUploadError('');
+        }
+
+        (function wireDropZone() {
+            const zone = document.getElementById('drop-zone');
+            const input = document.getElementById('file-input');
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+            });
+            ['dragenter', 'dragover'].forEach(name => zone.addEventListener(name, (e) => {
+                e.preventDefault();
+                zone.classList.add('dragging');
+            }));
+            ['dragleave', 'drop'].forEach(name => zone.addEventListener(name, (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragging');
+            }));
+            zone.addEventListener('drop', (e) => setSelectedFile(e.dataTransfer.files[0]));
+        })();
+
+        /* ---------- settings ---------- */
+        function renderAccount() {
+            document.getElementById('field-username').value = ACCOUNT.username;
+            document.getElementById('field-display').value = ACCOUNT.display_name;
+            document.getElementById('field-password').value = '••••••••';
+            document.getElementById('field-email').value = ACCOUNT.email;
+            const note = document.getElementById('email-note');
+            if (!ACCOUNT.email) {
+                note.className = 'field-note';
+                note.textContent = 'Add a recovery email so you can reset your password if you forget it.';
+            } else if (ACCOUNT.email_verified) {
+                note.className = 'field-note ok';
+                note.textContent = 'Verified';
+            } else {
+                note.className = 'field-note';
+                note.textContent = 'Not verified yet. Save changes to get a code, or use "Change" to resend.';
+            }
+        }
+
+        function lockAllFields() {
+            document.querySelectorAll('.settings-input').forEach(input => {
+                if (input.closest('.settings-container')) input.disabled = true;
+            });
+            verifiedPassword = null;
+        }
+
+        function unlockField(fieldId) {
+            const input = document.getElementById(fieldId);
+            input.disabled = false;
+            if (fieldId === 'field-password') {
+                input.value = '';
+                input.placeholder = 'New password (8+ characters)';
+            }
+            input.focus();
+        }
+
+        function openVerifyModal(title, text, buttonLabel) {
+            document.getElementById('verify-title').innerText = title;
+            document.getElementById('verify-text').innerText = text;
+            document.getElementById('verify-btn').innerText = buttonLabel;
+            document.getElementById('verify-password-input').value = '';
+            document.getElementById('verify-msg').innerText = '';
+            document.getElementById('verify-modal').style.display = 'flex';
+            document.getElementById('verify-password-input').focus();
+        }
+
+        function requestVerification(fieldId) {
+            if (verifiedPassword) { unlockField(fieldId); return; }   // already confirmed this session of edits
+            targetFieldId = fieldId;
+            pendingAction = 'unlock';
+            openVerifyModal('Security Check', 'Please enter your current password to confirm.', 'Verify');
+        }
+
+        function closeModal() {
+            document.getElementById('verify-modal').style.display = 'none';
+            targetFieldId = null;
+            pendingAction = null;
+        }
+
+        async function confirmVerification() {
+            const pass = document.getElementById('verify-password-input').value;
+            const message = document.getElementById('verify-msg');
+            if (pass.trim() === '') { message.innerText = 'Please enter your password.'; return; }
+
+            if (pendingAction === 'unlock' && targetFieldId) {
+                const res = await postJSON('/api/account/verify-password', { password: pass });
+                if (!res.ok) { message.innerText = res.data.message || 'Incorrect password.'; return; }
+                verifiedPassword = pass;
+                const field = targetFieldId;
+                closeModal();
+                unlockField(field);
+            } else if (pendingAction === 'delete') {
+                const res = await postJSON('/api/account/delete', { current_password: pass });
+                if (!res.ok) { message.innerText = res.data.message || 'Could not delete the account.'; return; }
+                window.location.href = '/';
+            }
+        }
+
+        async function saveSettings() {
+            if (!verifiedPassword) { toast('Click "Change" on a field first.'); return; }
+
+            const payload = { current_password: verifiedPassword };
+            const username = document.getElementById('field-username');
+            const display = document.getElementById('field-display');
+            const password = document.getElementById('field-password');
+            const email = document.getElementById('field-email');
+
+            if (!username.disabled && username.value.trim() !== ACCOUNT.username) payload.username = username.value.trim();
+            if (!display.disabled && display.value.trim() !== ACCOUNT.display_name) payload.display_name = display.value.trim();
+            if (!password.disabled && password.value !== '') payload.new_password = password.value;
+            const emailChanged = !email.disabled && email.value.trim().toLowerCase() !== ACCOUNT.email.toLowerCase();
+
+            if (Object.keys(payload).length === 1 && !emailChanged) {
+                toast('Nothing to save.');
+                lockAllFields();
+                renderAccount();
+                return;
+            }
+
+            if (Object.keys(payload).length > 1) {
+                const res = await postJSON('/api/account/update', payload);
+                if (!res.ok) { toast(res.data.message || 'Could not update settings.', 'error'); return; }
+                ACCOUNT = res.data.account;
+                if (payload.new_password) verifiedPassword = payload.new_password;
+            }
+
+            if (emailChanged) {
+                const res = await postJSON('/api/account/email/request', {
+                    current_password: verifiedPassword,
+                    email: email.value.trim(),
+                });
+                if (!res.ok) { toast(res.data.message || 'Could not send the code.', 'error'); return; }
+                ACCOUNT.email = email.value.trim();
+                ACCOUNT.email_verified = false;
+                document.getElementById('otp-text').innerText = res.data.message;
+                document.getElementById('otp-input').value = '';
+                document.getElementById('otp-msg').innerText = '';
+                document.getElementById('otp-modal').style.display = 'flex';
+                document.getElementById('otp-input').focus();
+                return;   // finishes in confirmEmailCode() / closeOtpModal()
+            }
+
+            finishSettings('Settings updated successfully!');
+        }
+
+        function finishSettings(message) {
+            lockAllFields();
+            renderAccount();
+            if (message) toast(message);
+        }
+
+        async function confirmEmailCode() {
+            const code = document.getElementById('otp-input').value.trim();
+            const msg = document.getElementById('otp-msg');
+            if (!code) { msg.innerText = 'Enter the code from your email.'; return; }
+            const res = await postJSON('/api/account/email/verify', { otp: code });
+            if (!res.ok) { msg.innerText = res.data.message || 'That code is not valid.'; return; }
+            ACCOUNT = res.data.account;
+            document.getElementById('otp-modal').style.display = 'none';
+            finishSettings('Recovery email verified.');
+        }
+
+        function closeOtpModal() {
+            document.getElementById('otp-modal').style.display = 'none';
+            finishSettings('Saved. Your email stays unverified until you enter the code.');
+        }
+
+        async function signOut() {
+            if (!confirm('Are you sure you want to sign out?')) return;
+            await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function deleteAccount() {
+            pendingAction = 'delete';
+            targetFieldId = null;
+            openVerifyModal('Delete account?',
+                'This permanently deletes your account, saved posts and history. Enter your password to confirm.',
+                'Delete');
+        }
+
+        renderAccount();
+        loadFeed(true);
+    </script>
+</body>
+</html>

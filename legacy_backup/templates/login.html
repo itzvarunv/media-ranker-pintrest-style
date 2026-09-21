@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neuroed - Auth</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Dark Grid Mesh Background */
+    body {
+      background-color: #06050a;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0);
+      background-size: 24px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Purple & Warm Backlight Glow Behind Card */
+    .glow-wrapper {
+      position: relative;
+    }
+
+    .glow-wrapper::before {
+      content: "";
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      right: -15px;
+      bottom: -15px;
+      border-radius: 36px;
+      background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #f97316 100%);
+      filter: blur(28px);
+      opacity: 0.65;
+      z-index: 1;
+    }
+
+    /* Glassmorphic Card Container */
+    .card {
+      position: relative;
+      z-index: 2;
+      background: rgba(18, 16, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 30px;
+      padding: 44px 36px;
+      width: 400px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(25px);
+    }
+
+    /* Icon Badge Header */
+    .icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(99, 102, 241, 0.3));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      color: #e9d5ff;
+      font-size: 20px;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    /* Inputs Styling */
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(8, 7, 13, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-field::placeholder {
+      color: #64748b;
+    }
+
+    .input-field:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    /* Options Row (Forgot Password) */
+    .options-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .forgot-link {
+      color: #c084fc;
+      font-size: 12px;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      color: #e9d5ff;
+      text-decoration: underline;
+    }
+
+    /* Vibrant Purple Submit Button */
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #9333ea 100%);
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Switch Sign In / Sign Up Footer */
+    .footer-text {
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 24px;
+    }
+
+    .footer-text a {
+      color: #c084fc;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Helper class to toggle views dynamically if needed */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-wrapper">
+    <div class="card">
+      
+      <!-- Icon Star Header -->
+      <div class="icon-badge">★</div>
+
+      <!-- Header Section -->
+      <h1 id="form-title">Welcome to Neuroed</h1>
+      <p class="subtitle" id="form-subtitle">Enter your credentials to access your personalized feed.</p>
+
+      <!-- Form Container -->
+      <form action="/auth" method="POST" id="auth-form">
+        
+        <!-- Display Name (Hidden by default for Sign In, shown for Sign Up) -->
+        <div class="input-group hidden" id="display-name-group">
+          <input type="text" name="display_name" class="input-field" placeholder="Display Name" />
+        </div>
+
+        <!-- Username Input -->
+        <div class="input-group">
+          <input type="text" name="username" class="input-field" placeholder="Username" required />
+        </div>
+
+        <!-- Password Input -->
+        <div class="input-group">
+          <input type="password" name="password" class="input-field" placeholder="Password" required />
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div class="options-row" id="forgot-container">
+          <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Action Button -->
+        <button type="submit" class="submit-btn" id="submit-btn">Let's start</button>
+      </form>
+
+      <!-- Toggle Sign In / Sign Up -->
+      <div class="footer-text">
+        <span id="toggle-label">Don't have an account?</span>
+        <a href="#" id="toggle-auth" onclick="toggleAuth(event)">Sign up</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let isSignIn = true;
+
+    function toggleAuth(event) {
+      event.preventDefault();
+      isSignIn = !isSignIn;
+
+      const title = document.getElementById("form-title");
+      const subtitle = document.getElementById("form-subtitle");
+      const displayNameGroup = document.getElementById("display-name-group");
+      const forgotContainer = document.getElementById("forgot-container");
+      const submitBtn = document.getElementById("submit-btn");
+      const toggleLabel = document.getElementById("toggle-label");
+      const toggleLink = document.getElementById("toggle-auth");
+
+      if (isSignIn) {
+        title.innerText = "Welcome to Neuroed";
+        subtitle.innerText = "Enter your credentials to access your personalized feed.";
+        displayNameGroup.classList.add("hidden");
+        forgotContainer.style.display = "flex";
+        submitBtn.innerText = "Let's start";
+        toggleLabel.innerText = "Don't have an account?";
+        toggleLink.innerText = "Sign up";
+      } else {
+        title.innerText = "Create an account";
+        subtitle.innerText = "Join Neuroed to start curating and discovering recommendations.";
+        displayNameGroup.classList.remove("hidden");
+        forgotContainer.style.display = "none";
+        submitBtn.innerText = "Create Account";
+        toggleLabel.innerText = "Already have an account?";
+        toggleLink.innerText = "Sign in";
+      }
+    }
+  </script>
+
+</body>
+</html>

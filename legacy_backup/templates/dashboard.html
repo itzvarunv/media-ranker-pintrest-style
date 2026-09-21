@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuroed - Vault Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0b0b12;
+            --card-bg: rgba(23, 22, 34, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --subtext-color: #a0a0b0;
+            --glow-color: rgba(168, 85, 247, 0.4);
+            --accent-purple: #a855f7;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --toggle-bg: #13111c;
+            --search-bg: rgba(10, 10, 18, 0.6);
+            --card-inner: rgba(15, 14, 25, 0.6);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --text-color: #0f172a;
+            --subtext-color: #475569;
+            --glow-color: rgba(168, 85, 247, 0.25);
+            --toggle-bg: #cbd5e1;
+            --search-bg: rgba(255, 255, 255, 0.85);
+            --card-inner: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, background 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .app-window {
+            width: 100%;
+            max-width: 100%;
+            height: calc(100vh - 24px);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.35), 0 0 40px rgba(168, 85, 247, 0.15);
+            display: grid;
+            grid-template-rows: 80px 1fr;
+            grid-template-columns: 80px 1fr;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 50%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 50px 12px 20px;
+            border-radius: 16px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle {
+            width: 64px;
+            height: 32px;
+            background: var(--toggle-bg);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle-thumb {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.75rem;
+        }
+
+        [data-theme="light"] .toggle-thumb {
+            transform: translateX(32px);
+            background: linear-gradient(135deg, #f97316, #eab308);
+        }
+
+        aside {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            gap: 25px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--subtext-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        main {
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .vault-grid {
+            column-count: 4;
+            column-gap: 20px;
+        }
+
+        .vault-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .vault-item img {
+            width: 100%;
+            display: block;
+            border-radius: 18px;
+        }
+
+        .vault-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: flex-end;
+            padding: 15px;
+            color: #fff;
+        }
+
+        .vault-item:hover .vault-item-overlay { opacity: 1; }
+
+        .upload-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            min-height: 450px;
+        }
+
+        .drop-zone {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border: 2px dashed var(--accent-purple);
+            border-radius: 24px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--card-inner);
+            transition: transform 0.2s;
+        }
+
+        .drop-zone:hover { transform: scale(1.02); }
+
+        /* Dynamic Glass Theme-Aware Upload Card */
+        .upload-card {
+            width: 400px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 25px var(--glow-color);
+            position: relative;
+            display: none;
+            color: var(--text-color);
+        }
+
+        .upload-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 15px;
+        }
+
+        .file-icon-box {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1e1b4b, #311b92);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #6366f1;
+        }
+
+        .file-details h4 { font-size: 1rem; color: var(--text-color); }
+        .file-details span { font-size: 0.85rem; color: var(--subtext-color); }
+
+        .close-card-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--subtext-color);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .progress-box {
+            background: var(--card-inner);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .progress-status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-purple);
+            box-shadow: 0 0 10px var(--accent-purple);
+            transition: width 0.2s ease;
+        }
+
+        .settings-container {
+            max-width: 650px;
+            margin: 20px auto;
+            background: var(--card-inner);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-group { margin-bottom: 22px; }
+
+        .settings-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .settings-label-row label {
+            font-size: 0.9rem;
+            color: var(--subtext-color);
+        }
+
+        .edit-badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-badge:hover {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .settings-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        /* Danger / Action Section for Account */
+        .account-actions {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .signout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signout-btn:hover { background: rgba(255, 255, 255, 0.08); }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--accent-red);
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-btn:hover {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            width: 360px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+            text-align: center;
+        }
+
+        .modal-card h3 { margin-bottom: 10px; font-size: 1.2rem; }
+        .modal-card p { font-size: 0.85rem; color: var(--subtext-color); margin-bottom: 20px; }
+
+        .modal-card input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions button { flex: 1; }
+
+        .cancel-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-window">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-brain" style="color: var(--accent-purple);"></i>
+                Neuroed
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search images, topics, niches...">
+                <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <div class="toggle-thumb" id="themeIcon"><i class="fa-solid fa-moon"></i></div>
+            </div>
+        </header>
+
+        <aside>
+            <button class="nav-btn active" id="btn-home" onclick="switchTab('home')" title="Home"><i class="fa-solid fa-house"></i></button>
+            <button class="nav-btn" id="btn-saved" onclick="switchTab('saved')" title="Saved"><i class="fa-regular fa-bookmark"></i></button>
+            <button class="nav-btn" id="btn-upload" onclick="switchTab('upload')" title="Upload"><i class="fa-solid fa-plus"></i></button>
+            <button class="nav-btn" id="btn-settings" onclick="switchTab('settings')" title="Settings"><i class="fa-solid fa-gear"></i></button>
+        </aside>
+
+        <main>
+            <!-- Home Feed Tab -->
+            <div id="tab-home" class="tab-content active">
+                <div class="vault-grid" id="home-grid">
+                    <div class="vault-item"><img src="https://picsum.photos/400/600" alt="Vault Image"><div class="vault-item-overlay"><div><strong>Computer Science</strong></div></div></div>
+                    <div class="vault-item"><img src="https://picsum.photos/400/300" alt="Vault Image"><div class="vault-item-overlay"><div><strong>Automotive</strong></div></div></div>
+                    <div class="vault-item"><img src="https://picsum.photos/400/500" alt="Vault Image"><div class="vault-item-overlay"><div><strong>Mathematics</strong></div></div></div>
+                </div>
+            </div>
+
+            <!-- Saved Tab -->
+            <div id="tab-saved" class="tab-content">
+                <div class="vault-grid" id="saved-grid">
+                    <div class="vault-item"><img src="https://picsum.photos/400/600" alt="Vault Image"><div class="vault-item-overlay"><div><strong>Saved Note</strong></div></div></div>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="tab-upload" class="tab-content">
+                <div class="upload-container">
+                    <input type="file" id="file-input" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+                    
+                    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--accent-purple); margin-bottom: 15px;"></i>
+                        <h3>Select or Drag Image Here</h3>
+                        <p style="color: var(--subtext-color); font-size: 0.9rem; margin-top: 5px;">Supports JPG, PNG, WEBP</p>
+                    </div>
+
+                    <div class="upload-card" id="upload-card">
+                        <button class="close-card-btn" onclick="resetUpload()"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="upload-card-header">
+                            <div class="file-icon-box"><i class="fa-solid fa-image"></i></div>
+                            <div class="file-details">
+                                <h4 id="card-filename">Image Asset</h4>
+                                <span id="card-filesize">0 MB</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <input type="text" id="upload-title" placeholder="Title / MILD Heading..." class="settings-input" style="margin-bottom: 10px;">
+                            <textarea id="upload-desc" placeholder="Write MILD description or notes..." rows="3" class="settings-input" style="resize: none;"></textarea>
+                        </div>
+
+                        <div class="progress-box" id="progress-box" style="display: none;">
+                            <div class="progress-status">
+                                <span><i class="fa-solid fa-circle-notch fa-spin"></i> Saving Asset...</span>
+                                <span id="progress-text">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <button id="start-upload-btn" onclick="processUpload()" class="primary-btn" style="width: 100%; margin-top: 10px;">Save Asset & Note</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <div class="settings-container">
+                    <h2 style="margin-bottom: 25px;">Account Settings</h2>
+                    
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label>Username</label>
+                            <span class="edit-badge" onclick="requestVerification('field-username')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="text" id="field-username" class="settings-input" value="neuroed_user" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label>Display Name</label>
+                            <span class="edit-badge" onclick="requestVerification('field-display')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="text" id="field-display" class="settings-input" value="Neuroed User" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label>Password</label>
+                            <span class="edit-badge" onclick="requestVerification('field-password')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="password" id="field-password" class="settings-input" value="••••••••" disabled>
+                    </div>
+
+                    <div class="settings-group">
+                        <div class="settings-label-row">
+                            <label>Recovery Email</label>
+                            <span class="edit-badge" onclick="requestVerification('field-email')"><i class="fa-solid fa-lock"></i> Change</span>
+                        </div>
+                        <input type="email" id="field-email" class="settings-input" value="user@example.com" disabled>
+                    </div>
+
+                    <button class="primary-btn" onclick="saveSettings()">Save Changes</button>
+
+                    <!-- Sign Out & Delete Account Actions -->
+                    <div class="account-actions">
+                        <button class="signout-btn" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+                        <button class="delete-btn" onclick="deleteAccount()"><i class="fa-solid fa-trash-can"></i> Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Security Verification Modal -->
+        <div class="modal-overlay" id="verify-modal">
+            <div class="modal-card">
+                <i class="fa-solid fa-shield-halved" style="font-size: 2.5rem; color: var(--accent-purple); margin-bottom: 15px;"></i>
+                <h3>Security Check</h3>
+                <p>Please enter your current password to confirm.</p>
+                <input type="password" id="verify-password-input" placeholder="Current Password">
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button class="primary-btn" onclick="confirmVerification()">Verify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let targetFieldId = null;
+        let pendingAction = null;
+        let selectedFile = null;
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const icon = document.getElementById('themeIcon');
+            if (currentTheme === 'light') {
+                body.removeAttribute('data-theme');
+                icon.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`btn-${tabName}`).classList.add('active');
+        }
+
+        /* File Upload Handler - Clean Input & State System */
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (!selectedFile) return;
+
+            document.getElementById('drop-zone').style.display = 'none';
+            document.getElementById('upload-card').style.display = 'block';
+
+            document.getElementById('card-filename').innerText = selectedFile.name;
+            document.getElementById('card-filesize').innerText = (selectedFile.size / (1024 * 1024)).toFixed(1) + ' MB';
+            document.getElementById('upload-title').value = selectedFile.name.split('.')[0];
+            document.getElementById('upload-desc').value = '';
+        }
+
+        function processUpload() {
+            if (!selectedFile) return;
+
+            const title = document.getElementById('upload-title').value || 'Untitled Note';
+            const desc = document.getElementById('upload-desc').value || '';
+
+            document.getElementById('start-upload-btn').style.display = 'none';
+            document.getElementById('progress-box').style.display = 'block';
+
+            let progress = 0;
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+
+            const interval = setInterval(() => {
+                progress += 10;
+                fill.style.width = progress + '%';
+                text.innerText = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const imgUrl = URL.createObjectURL(selectedFile);
+                        addMediaToVault(imgUrl, title, desc);
+                        switchTab('saved');
+                        resetUpload();
+                    }, 400);
+                }
+            }, 80);
+        }
+
+        function addMediaToVault(url, title, desc) {
+            const newItemHTML = `
+                <div class="vault-item">
+                    <img src="${url}" alt="${title}">
+                    <div class="vault-item-overlay">
+                        <div>
+                            <strong style="display:block; font-size:1rem;">${title}</strong>
+                            <span style="font-size:0.8rem; opacity:0.8;">${desc}</span>
+                        </div>
+                    </div>
+                </div>`;
+            document.getElementById('saved-grid').insertAdjacentHTML('afterbegin', newItemHTML);
+            document.getElementById('home-grid').insertAdjacentHTML('afterbegin', newItemHTML);
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.value = '';
+
+            document.getElementById('upload-card').style.display = 'none';
+            document.getElementById('drop-zone').style.display = 'block';
+            document.getElementById('progress-box').style.display = 'none';
+            document.getElementById('start-upload-btn').style.display = 'block';
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').innerText = '0%';
+            document.getElementById('upload-title').value = '';
+            document.getElementById('upload-desc').value = '';
+        }
+
+        /* Settings Security Modal & Account Management */
+        function requestVerification(fieldId) {
+            targetFieldId = fieldId;
+            pendingAction = 'unlock';
+            document.getElementById('verify-password-input').value = '';
+            document.getElementById('verify-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('verify-modal').style.display = 'none';
+            targetFieldId = null;
+            pendingAction = null;
+        }
+
+        function confirmVerification() {
+            const pass = document.getElementById('verify-password-input').value;
+            if (pass.trim() === '') {
+                alert('Please enter your password.');
+                return;
+            }
+
+            if (pendingAction === 'unlock' && targetFieldId) {
+                const targetInput = document.getElementById(targetFieldId);
+                targetInput.disabled = false;
+                if (targetFieldId === 'field-password') {
+                    targetInput.value = '';
+                }
+                targetInput.focus();
+            } else if (pendingAction === 'delete') {
+                alert('Account deleted successfully.');
+                window.location.href = '/login';
+            }
+
+            closeModal();
+        }
+
+        function saveSettings() {
+            alert('Settings updated successfully!');
+            document.querySelectorAll('.settings-input').forEach(input => input.disabled = true);
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = '/login';
+            }
+        }
+
+        function deleteAccount() {
+            pendingAction = 'delete';
+            document.getElementById('verify-password-input').value = '';
+            document.getElementById('verify-modal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

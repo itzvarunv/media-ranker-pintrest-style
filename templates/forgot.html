@@ -1,0 +1,109 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Neuroed - Reset password{% endblock %}
+
+{% block content %}
+      <h1>Reset your password</h1>
+      <p class="subtitle" id="subtitle">Enter your username and we'll email a code to your verified recovery email.</p>
+
+      <div id="message" class="flash hidden" role="alert"></div>
+
+      <!-- Step 1: ask for the code -->
+      <form id="request-form">
+        <div class="input-group">
+          <input type="text" id="username" class="input-field" placeholder="Username" maxlength="30" autocomplete="username" required />
+        </div>
+        <button type="submit" class="submit-btn" id="request-btn">Send code</button>
+      </form>
+
+      <!-- Step 2: enter the code + a new password -->
+      <form id="reset-form" class="hidden">
+        <div class="input-group">
+          <input type="text" id="otp" class="input-field" placeholder="{{ otp_length }}-digit code" inputmode="numeric"
+                 maxlength="{{ otp_length }}" autocomplete="one-time-code" required />
+        </div>
+        <div class="input-group">
+          <input type="password" id="new-password" class="input-field" placeholder="New password (8+ characters)"
+                 minlength="8" autocomplete="new-password" required />
+        </div>
+        <button type="submit" class="submit-btn" id="reset-btn">Reset password</button>
+        <p class="hint" style="margin-top: 14px;">Codes expire after 10 minutes and stop working after 5 wrong tries.
+          <a href="#" class="forgot-link" onclick="backToStepOne(event)">Send a new code</a></p>
+      </form>
+
+      <div class="footer-text">
+        <a href="/">Back to sign in</a>
+      </div>
+
+      <p class="hint" style="margin-top: 18px; text-align: center;">
+        No recovery email on file? Sign in and add one under Settings so you can recover your account later.
+      </p>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    const requestForm = document.getElementById("request-form");
+    const resetForm = document.getElementById("reset-form");
+    const messageBox = document.getElementById("message");
+    const subtitle = document.getElementById("subtitle");
+
+    function show(text, kind) {
+      messageBox.textContent = text;
+      messageBox.className = "flash " + kind;
+    }
+
+    async function post(url, payload) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      let data = {};
+      try { data = await res.json(); } catch (e) {}
+      return { ok: res.ok && data.ok !== false, data };
+    }
+
+    function backToStepOne(event) {
+      if (event) event.preventDefault();
+      resetForm.classList.add("hidden");
+      requestForm.classList.remove("hidden");
+      subtitle.textContent = "Enter your username and we'll email a code to your verified recovery email.";
+      messageBox.className = "flash hidden";
+    }
+
+    requestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("request-btn");
+      button.disabled = true;
+      const { data } = await post("/forgot-password/request", {
+        username: document.getElementById("username").value,
+      });
+      button.disabled = false;
+      show(data.message || "If that account has a verified recovery email, we've sent it a code.", "info");
+      requestForm.classList.add("hidden");
+      resetForm.classList.remove("hidden");
+      subtitle.textContent = "Enter the code from your email and choose a new password.";
+      document.getElementById("otp").focus();
+    });
+
+    resetForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("reset-btn");
+      button.disabled = true;
+      const { ok, data } = await post("/forgot-password/reset", {
+        username: document.getElementById("username").value,
+        otp: document.getElementById("otp").value,
+        new_password: document.getElementById("new-password").value,
+      });
+      button.disabled = false;
+      if (ok) {
+        show(data.message, "success");
+        resetForm.classList.add("hidden");
+        subtitle.textContent = "All set.";
+        setTimeout(() => { window.location.href = "/"; }, 1500);
+      } else {
+        show(data.message || "Something went wrong. Please try again.", "danger");
+      }
+    });
+  </script>
+{% endblock %}

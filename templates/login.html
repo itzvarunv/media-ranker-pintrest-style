@@ -1,0 +1,106 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Neuroed - Auth{% endblock %}
+
+{% block content %}
+      <!-- Header Section -->
+      <h1 id="form-title">Welcome to Neuroed</h1>
+      <p class="subtitle" id="form-subtitle">Enter your credentials to access your personalized feed.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- Form Container -->
+      <form action="/auth" method="POST" id="auth-form">
+        <input type="hidden" name="mode" id="auth-mode" value="signin" />
+
+        <!-- Display Name (Hidden by default for Sign In, shown for Sign Up) -->
+        <div class="input-group hidden" id="display-name-group">
+          <input type="text" name="display_name" id="display-name" class="input-field" placeholder="Display Name" maxlength="100" autocomplete="name" />
+        </div>
+
+        <!-- Username Input -->
+        <div class="input-group">
+          <input type="text" name="username" class="input-field" placeholder="Username" maxlength="30" autocomplete="username" required />
+        </div>
+
+        <!-- Password Input -->
+        <div class="input-group">
+          <input type="password" name="password" id="password" class="input-field" placeholder="Password" autocomplete="current-password" required />
+        </div>
+
+        <p class="hint hidden" id="signup-hint">Username: 3-30 letters, numbers, "_" or ".". Password: at least 8 characters.</p>
+
+        <!-- Forgot Password Link -->
+        <div class="options-row" id="forgot-container">
+          <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Action Button -->
+        <button type="submit" class="submit-btn" id="submit-btn">Let's start</button>
+      </form>
+
+      <!-- Toggle Sign In / Sign Up -->
+      <div class="footer-text">
+        <span id="toggle-label">Don't have an account?</span>
+        <a href="#" id="toggle-auth" onclick="toggleAuth(event)">Sign up</a>
+      </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    let isSignIn = true;
+
+    function toggleAuth(event) {
+      event.preventDefault();
+      isSignIn = !isSignIn;
+
+      const title = document.getElementById("form-title");
+      const subtitle = document.getElementById("form-subtitle");
+      const displayNameGroup = document.getElementById("display-name-group");
+      const displayName = document.getElementById("display-name");
+      const forgotContainer = document.getElementById("forgot-container");
+      const submitBtn = document.getElementById("submit-btn");
+      const toggleLabel = document.getElementById("toggle-label");
+      const toggleLink = document.getElementById("toggle-auth");
+      const password = document.getElementById("password");
+      const signupHint = document.getElementById("signup-hint");
+
+      // The server decides sign-in vs sign-up from this field, not from whether
+      // the display name happens to be filled in.
+      document.getElementById("auth-mode").value = isSignIn ? "signin" : "signup";
+
+      if (isSignIn) {
+        title.innerText = "Welcome to Neuroed";
+        subtitle.innerText = "Enter your credentials to access your personalized feed.";
+        displayNameGroup.classList.add("hidden");
+        signupHint.classList.add("hidden");
+        displayName.required = false;
+        password.removeAttribute("minlength");
+        password.autocomplete = "current-password";
+        forgotContainer.style.display = "flex";
+        submitBtn.innerText = "Let's start";
+        toggleLabel.innerText = "Don't have an account?";
+        toggleLink.innerText = "Sign up";
+      } else {
+        title.innerText = "Create an account";
+        subtitle.innerText = "Join Neuroed to start curating and discovering recommendations.";
+        displayNameGroup.classList.remove("hidden");
+        signupHint.classList.remove("hidden");
+        displayName.required = true;
+        password.minLength = 8;
+        password.autocomplete = "new-password";
+        forgotContainer.style.display = "none";
+        submitBtn.innerText = "Create Account";
+        toggleLabel.innerText = "Already have an account?";
+        toggleLink.innerText = "Sign in";
+      }
+    }
+
+    // After a successful sign-up the server sends us back here with a success
+    // message; the user next needs the sign-in form, which is the default view.
+  </script>
+{% endblock %}
